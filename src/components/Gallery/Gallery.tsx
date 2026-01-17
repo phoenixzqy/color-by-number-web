@@ -1,8 +1,48 @@
 import { useNavigate } from 'react-router-dom'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { usePuzzleStore } from '../../stores/puzzleStore'
 import { useUserProgressStore } from '../../stores/userProgressStore'
 import { CATEGORIES, DIFFICULTY_CONFIG } from '../../types'
 import type { Puzzle } from '../../types'
+
+// Calculate how many items fit in the viewport
+function useVisibleItemCount() {
+  const [count, setCount] = useState(20) // Default initial count
+
+  useEffect(() => {
+    const calculateCount = () => {
+      const viewportHeight = window.innerHeight
+      const viewportWidth = window.innerWidth
+
+      // Estimate card dimensions based on grid layout
+      // Cards are roughly 180px tall (aspect-square thumbnail + info section)
+      const cardHeight = 220
+      // Gap between cards is 16px (gap-4)
+      const gap = 16
+      // Header + search + category tabs take roughly 180px
+      const headerHeight = 180
+
+      // Calculate columns based on breakpoints (matches grid-cols-2 sm:3 md:4 lg:5)
+      let columns = 2
+      if (viewportWidth >= 1024) columns = 5
+      else if (viewportWidth >= 768) columns = 4
+      else if (viewportWidth >= 640) columns = 3
+
+      // Calculate rows that fit in viewport
+      const availableHeight = viewportHeight - headerHeight
+      const rows = Math.ceil(availableHeight / (cardHeight + gap)) + 1 // +1 for buffer
+
+      // Return total visible items with some buffer
+      setCount(columns * rows + columns) // Extra row for smooth scrolling
+    }
+
+    calculateCount()
+    window.addEventListener('resize', calculateCount)
+    return () => window.removeEventListener('resize', calculateCount)
+  }, [])
+
+  return count
+}
 
 export default function Gallery() {
   const navigate = useNavigate()
@@ -16,6 +56,40 @@ export default function Gallery() {
   const { getProgress, getCompletionPercentage } = useUserProgressStore()
 
   const filteredPuzzles = getFilteredPuzzles()
+
+  // Windowing: track how many items to render
+  const visibleItemCount = useVisibleItemCount()
+  const [renderedCount, setRenderedCount] = useState(visibleItemCount)
+  const loadMoreRef = useRef<HTMLDivElement>(null)
+
+  // Reset rendered count when filters change
+  useEffect(() => {
+    setRenderedCount(visibleItemCount)
+  }, [selectedCategory, searchQuery, visibleItemCount])
+
+  // Intersection observer to load more items when scrolling
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && renderedCount < filteredPuzzles.length) {
+          setRenderedCount(prev => Math.min(prev + visibleItemCount, filteredPuzzles.length))
+        }
+      },
+      { rootMargin: '200px' }
+    )
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [renderedCount, filteredPuzzles.length, visibleItemCount])
+
+  // Get only the puzzles to render (windowing)
+  const visiblePuzzles = useMemo(
+    () => filteredPuzzles.slice(0, renderedCount),
+    [filteredPuzzles, renderedCount]
+  )
 
   const handleStartPuzzle = (puzzle: Puzzle) => {
     navigate(`/paint/${puzzle.id}`)
@@ -74,21 +148,29 @@ export default function Gallery() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {filteredPuzzles.map((puzzle) => (
-            <PuzzleCard
-              key={puzzle.id}
-              puzzle={puzzle}
-              progress={getProgress(puzzle.id)}
-              completionPercentage={getCompletionPercentage(
-                puzzle.id,
-                puzzle.cells.flat().filter(id => id !== 0).length,
-                puzzle.cells
-              )}
-              onStart={() => handleStartPuzzle(puzzle)}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {visiblePuzzles.map((puzzle) => (
+              <PuzzleCard
+                key={puzzle.id}
+                puzzle={puzzle}
+                progress={getProgress(puzzle.id)}
+                completionPercentage={getCompletionPercentage(
+                  puzzle.id,
+                  puzzle.cells.flat().filter(id => id !== 0).length,
+                  puzzle.cells
+                )}
+                onStart={() => handleStartPuzzle(puzzle)}
+              />
+            ))}
+          </div>
+          {/* Sentinel for loading more items */}
+          {renderedCount < filteredPuzzles.length && (
+            <div ref={loadMoreRef} className="h-10 flex items-center justify-center mt-4">
+              <div className="text-gray-400 text-sm">Loading more...</div>
+            </div>
+          )}
+        </>
       )}
     </div>
   )

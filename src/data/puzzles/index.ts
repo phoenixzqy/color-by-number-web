@@ -123,6 +123,8 @@ import puzzle119 from './wooden-pickaxe.json'
 import puzzle120 from './wooden-sword.json'
 import puzzle121 from './zombie.json'
 import puzzle122 from './zombified-piglin.json'
+import puzzle123 from './logan.json'
+import puzzle124 from './mia.json'
 
 export const puzzles = [
   puzzle0,
@@ -247,5 +249,7 @@ export const puzzles = [
   puzzle119,
   puzzle120,
   puzzle121,
-  puzzle122
+  puzzle122,
+  puzzle123,
+  puzzle124,
 ] as Puzzle[]

@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react'
 
 interface CelebrationProps {
   onClose: () => void
+  onContinue?: () => void
 }
 
-export default function Celebration({ onClose }: CelebrationProps) {
+export default function Celebration({ onClose, onContinue }: CelebrationProps) {
   const [confetti, setConfetti] = useState<Array<{ id: number; x: number; color: string; delay: number }>>([])
 
   useEffect(() => {
@@ -51,7 +52,7 @@ export default function Celebration({ onClose }: CelebrationProps) {
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Amazing!</h2>
         <p className="text-gray-600 mb-6">You completed the artwork!</p>
         <button
-          onClick={onClose}
+          onClick={onContinue || onClose}
           className="bg-primary-500 text-white px-8 py-3 rounded-xl font-semibold hover:bg-primary-600 transition-colors"
         >
           Continue

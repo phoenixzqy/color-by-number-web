@@ -42,9 +42,11 @@ export type Category =
   | 'characters'
   | 'places'
   | 'objects'
+  | 'family'
 
 export const CATEGORIES: { value: Category; label: string; emoji: string }[] = [
   { value: 'all', label: 'All', emoji: '🎨' },
+  { value: 'family', label: 'Family', emoji: '👨‍👩‍👧‍👦' },
   { value: 'animals', label: 'Animals', emoji: '🐾' },
   { value: 'nature', label: 'Nature', emoji: '🌸' },
   { value: 'vehicles', label: 'Vehicles', emoji: '🚗' },

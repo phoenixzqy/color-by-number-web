@@ -615,7 +615,10 @@ export default function PaintBoard() {
 
       {/* Celebration */}
       {showCelebration && (
-        <Celebration onClose={() => setShowCelebration(false)} />
+        <Celebration
+          onClose={() => setShowCelebration(false)}
+          onContinue={() => navigate('/')}
+        />
       )}
     </div>
   )

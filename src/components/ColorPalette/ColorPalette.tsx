@@ -30,18 +30,8 @@ export default function ColorPalette({
     }).length
   }
 
-  // Sort colors: incomplete first, then by remaining count
-  const sortedColors = [...colors].sort((a, b) => {
-    const aRemaining = getColorRemaining(a.id)
-    const bRemaining = getColorRemaining(b.id)
-
-    // Completed colors go to end
-    if (aRemaining === 0 && bRemaining > 0) return 1
-    if (bRemaining === 0 && aRemaining > 0) return -1
-
-    // Sort by remaining count (fewer first for quick wins)
-    return aRemaining - bRemaining
-  })
+  // Sort colors by color number (id)
+  const sortedColors = [...colors].sort((a, b) => a.id - b.id)
 
   return (
     <div className="flex-shrink-0 bg-white border-t border-gray-200 safe-area-bottom">
