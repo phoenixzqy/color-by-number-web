@@ -1,0 +1,48 @@
+name: Deploy to GitHub Pages
+
+on:
+  # Trigger on push to main branch
+  push:
+    branches: [main]
+
+  # Allow manual trigger from Actions tab
+  workflow_dispatch:
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages-colorbynumberweb"
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build the app
+        run: npm run build
+
+      - name: Deploy to GitHub Pages (colorbynumberweb folder only)
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          # Use personal access token to deploy to external repo
+          personal_token: ${{ secrets.COLOR_BY_NUMBER_DEPLOY }}
+          # Deploy to the phoenixzqy.github.io repo
+          external_repository: phoenixzqy/phoenixzqy.github.io
+          publish_branch: master
+          publish_dir: ./dist
+          destination_dir: colorbynumberweb
+          keep_files: false
+          # This will only clear and replace the /colorbynumberweb folder
+          # Other folders in the repo will be preserved
