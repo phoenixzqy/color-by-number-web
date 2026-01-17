@@ -157,7 +157,7 @@ export default function PaintBoard() {
             ctx.fillStyle = expectedColor?.hex || '#ccc'
             ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE)
           } else {
-            // Wrong color (mistake) - show lighter version with number and X
+            // Wrong color (mistake) - show lighter version with number
             ctx.fillStyle = lightenColor(filledColor?.hex || '#ccc', 0.6)
             ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE)
 
@@ -167,16 +167,6 @@ export default function PaintBoard() {
             ctx.textAlign = 'center'
             ctx.textBaseline = 'middle'
             ctx.fillText(String(expectedColorId), x + CELL_SIZE / 2, y + CELL_SIZE / 2)
-
-            // Draw low opacity X over the cell
-            ctx.strokeStyle = 'rgba(220, 38, 38, 0.35)'
-            ctx.lineWidth = 2
-            ctx.beginPath()
-            ctx.moveTo(x + 3, y + 3)
-            ctx.lineTo(x + CELL_SIZE - 3, y + CELL_SIZE - 3)
-            ctx.moveTo(x + CELL_SIZE - 3, y + 3)
-            ctx.lineTo(x + 3, y + CELL_SIZE - 3)
-            ctx.stroke()
           }
         } else {
           // Unfilled cell - show number
