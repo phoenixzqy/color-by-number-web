@@ -155,24 +155,27 @@ export default function PaintBoard() {
           if (filledColorId === expectedColorId) {
             // Correctly filled - show full color
             ctx.fillStyle = expectedColor?.hex || '#ccc'
-          } else {
-            // Wrong color (mistake) - show lighter version
-            ctx.fillStyle = lightenColor(filledColor?.hex || '#ccc', 0.5)
-          }
-          ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE)
-
-          // If mistake, show a small indicator
-          if (filledColorId !== expectedColorId) {
-            ctx.fillStyle = 'rgba(255, 0, 0, 0.3)'
             ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE)
-            // Draw small X
-            ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)'
-            ctx.lineWidth = 1.5
+          } else {
+            // Wrong color (mistake) - show lighter version with number and X
+            ctx.fillStyle = lightenColor(filledColor?.hex || '#ccc', 0.6)
+            ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE)
+
+            // Draw the expected number on top
+            ctx.fillStyle = '#6b7280'
+            ctx.font = `bold ${Math.max(10, CELL_SIZE * 0.45)}px system-ui`
+            ctx.textAlign = 'center'
+            ctx.textBaseline = 'middle'
+            ctx.fillText(String(expectedColorId), x + CELL_SIZE / 2, y + CELL_SIZE / 2)
+
+            // Draw low opacity X over the cell
+            ctx.strokeStyle = 'rgba(220, 38, 38, 0.35)'
+            ctx.lineWidth = 2
             ctx.beginPath()
-            ctx.moveTo(x + 4, y + 4)
-            ctx.lineTo(x + CELL_SIZE - 4, y + CELL_SIZE - 4)
-            ctx.moveTo(x + CELL_SIZE - 4, y + 4)
-            ctx.lineTo(x + 4, y + CELL_SIZE - 4)
+            ctx.moveTo(x + 3, y + 3)
+            ctx.lineTo(x + CELL_SIZE - 3, y + CELL_SIZE - 3)
+            ctx.moveTo(x + CELL_SIZE - 3, y + 3)
+            ctx.lineTo(x + 3, y + CELL_SIZE - 3)
             ctx.stroke()
           }
         } else {
@@ -265,9 +268,12 @@ export default function PaintBoard() {
     const expectedColorId = puzzle.cells[row][col]
     const currentFilledId = progress.filledCells[row]?.[col] || 0
 
-    // Skip if cell is empty (no color expected) or already filled with same color
+    // Skip if cell is empty (no color expected)
     if (expectedColorId === 0) return
+    // Skip if already filled with the same color we're trying to paint
     if (currentFilledId === selectedColor.id) return
+    // Skip if cell is already CORRECTLY filled (can't override correct fills)
+    if (currentFilledId === expectedColorId) return
 
     // Record undo action
     setUndoStack(prev => [...prev.slice(-50), { row, col, previousColorId: currentFilledId }])
