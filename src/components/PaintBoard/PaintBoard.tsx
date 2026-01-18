@@ -157,16 +157,30 @@ export default function PaintBoard() {
             ctx.fillStyle = expectedColor?.hex || '#ccc'
             ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE)
           } else {
-            // Wrong color (mistake) - show lighter version with number
-            ctx.fillStyle = lightenColor(filledColor?.hex || '#ccc', 0.6)
-            ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE)
+            // Wrong color (mistake) - show hint color if selected matches expected, otherwise lighter wrong color
+            if (isSelected) {
+              // Selected color matches expected - show hint highlighting instead of wrong color
+              ctx.fillStyle = '#e0e7ff'
+              ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE)
 
-            // Draw the expected number on top
-            ctx.fillStyle = '#6b7280'
-            ctx.font = `bold ${Math.max(10, CELL_SIZE * 0.45)}px system-ui`
-            ctx.textAlign = 'center'
-            ctx.textBaseline = 'middle'
-            ctx.fillText(String(expectedColorId), x + CELL_SIZE / 2, y + CELL_SIZE / 2)
+              // Draw number with hint styling
+              ctx.fillStyle = '#4338ca'
+              ctx.font = `bold ${Math.max(10, CELL_SIZE * 0.45)}px system-ui`
+              ctx.textAlign = 'center'
+              ctx.textBaseline = 'middle'
+              ctx.fillText(String(expectedColorId), x + CELL_SIZE / 2, y + CELL_SIZE / 2)
+            } else {
+              // Show lighter version of wrong color with number
+              ctx.fillStyle = lightenColor(filledColor?.hex || '#ccc', 0.6)
+              ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE)
+
+              // Draw the expected number on top
+              ctx.fillStyle = '#6b7280'
+              ctx.font = `bold ${Math.max(10, CELL_SIZE * 0.45)}px system-ui`
+              ctx.textAlign = 'center'
+              ctx.textBaseline = 'middle'
+              ctx.fillText(String(expectedColorId), x + CELL_SIZE / 2, y + CELL_SIZE / 2)
+            }
           }
         } else {
           // Unfilled cell - show number
